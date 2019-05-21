@@ -6,12 +6,12 @@ r({complexAlg,A,B}) -> math:sqrt(A*A + B*B) .
 
 arg({complexAlg,A,B}) -> 
     if 
-        (A == 0) and (B > 0) -> math:pi()/2;
-        (A == 0) and (B < 0) -> -math:pi()/2;
-        (A > B) -> math:atan(B/A);
-        (A < 0) and (B >= 0) -> math:atan(B/A) + math:pi();
-        (A < 0) and (B < 0) -> math:atan(B/A) - math:pi();
-        true -> io:format("exception: c=0+i0 arg not defined\n")
+        (A == 0.0) and (B > 0.0) -> math:pi()/2;
+        (A == 0.0) and (B < 0.0) -> -math:pi()/2;
+        (A > 0.0) -> math:atan(B/A);
+        (A < 0.0) and (B >= 0.0) -> math:atan(B/A) + math:pi();
+        (A < 0.0) and (B < 0.0) -> math:atan(B/A) - math:pi();
+        (A==0.0) and (B==0.0) -> io:format("exception: c=0+i0 arg not defined\n")
     end .
 
 sum({complexAlg,A1,B1},{complexAlg,A2,B2}) ->
