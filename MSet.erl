@@ -1,5 +1,5 @@
 - module(mset).
-- export ([f/2,serie/5,mMatrix/3,start_serie/3,mMatrixSeq/3]).
+- export ([f/2,serie/5,mMatrixSeq/3,start_serie/3]).
 
 range(N,M,Step) -> 
     if 
@@ -69,32 +69,42 @@ serie({complexAlg,Ca,Cb}, {complexAlg,Za,Zb}, N, Limit, Verbose) ->
     end
 .
      
-start_serie({complexAlg,A,B},Limit,Verbose)  ->
+start_serie({complexAlg,A,B},Limit,VerboseLevel)  ->
     %return iterazione a cui diverge o limite
+    %VerboseLevel: 0 niente, 1 risultato finale , 2 singole iterazioni 
+    
+    case VerboseLevel of
+        0 -> Verbose = false,Verbose2 = false ;
+        1 -> Verbose = false,Verbose2 = true;
+        2 -> Verbose = true,Verbose2 = true;
+        _ -> Verbose = false,Verbose2 = false 
+    end,
+
     CAlg = {complexAlg,A,B},
+
     StartTm = erlang:system_time(millisecond),
-    It = serie(CAlg,{complexAlg,0.0,0.0},0,Limit,Verbose),
+    It = serie(CAlg,{complexAlg,0.0,0.0},0,Limit,Verbose), %calcolo serie effettivo
     TempoExGlobale = erlang:system_time(millisecond) - StartTm,
-    io:format("C = (~f+i*~f) \titerazioni:~B \ttm=~Bms\n",[A,B,It,TempoExGlobale]),
+
+    if  Verbose2 -> 
+            io:format("C = (~f+i*~f) \titerazioni:~B \ttm=~Bms\n",[A,B,It,TempoExGlobale]);
+        true -> {}
+    end,
+
     It.
 
-    
 
 
-mMatrix(Step,Limit,Verbose) -> 
+mMatrixSeq(Step,Limit,VerboseLevel) -> 
+    %VerboseLevel: 0 solo fine calcolo totale, 1 risultato finale per ogni C , 2 singole iterazioni 
+    Fun = fun(P) -> start_serie(P,Limit,VerboseLevel) end,
+
+    StartTm = erlang:system_time(millisecond),
     Pairs = [ [{complexAlg,X,Y} || X <- range(-2.0,1.0,Step)] || Y <- range(-1.0,1.0,Step)],
-    lists:map (fun(Row) -> lists:map (fun(P) -> spawn(mset, start_serie, [P,Limit,Verbose]) end,Row ) end, Pairs ) 
+    MS = lists:map (fun(Row) -> lists:map (Fun,Row ) end, Pairs ),
+    FinalTime = erlang:system_time(millisecond) - StartTm,
+
+    io:format("FINE CALCOLO MATRICE DI APPARTENENZA\ttm=~Bms\n",[FinalTime]),
+    MS
 . 
 
-mMatrixSeq(Step,Limit,Verbose) -> 
-    Pairs = [ [{complexAlg,X,Y} || X <- range(-2.0,1.0,Step)] || Y <- range(-1.0,1.0,Step)],
-    lists:map (
-        fun(Row) -> lists:map (
-            fun(P) -> 
-                It = start_serie(P,Limit,Verbose),
-                if 
-                    It < Limit -> "*" ;
-                    true -> " " 
-                end  
-            end,Row ) end, Pairs ) 
-. 
