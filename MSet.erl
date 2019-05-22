@@ -1,5 +1,5 @@
 - module(mset).
-- export ([f/2,serie/4,mMatrix/4,start_serie/2,mMatrixSeq/4]).
+- export ([f/2,serie/5,mMatrix/3,start_serie/3,mMatrixSeq/3]).
 
 range(N,M,Step) -> 
     if 
@@ -26,48 +26,72 @@ f({complexAlg,Ca,Cb},{complexAlg,Za,Zb}) -> % f(c,z) = z^2 + c
 %           (Int:iterazione) ->
 %           (Int:diverge all'iter ...)
 
-serie({complexAlg,Ca,Cb}, {complexAlg,Za,Zb}, N, Limit) ->
+serie({complexAlg,Ca,Cb}, {complexAlg,Za,Zb}, N, Limit, Verbose) ->
+    % N : iterazione corrente
+    % Limit : iterazione a cui fermarsi
+    % verbose : stampa delle iterazione Zn
+    % return : #dell'iterazione a cui la serie diverge o il limite
     Calg = {complexAlg,Ca,Cb},
     Zalg = {complexAlg,Za,Zb},
     
     if
-        N == Limit -> 
-            io:format("reach limit\n"),
+        N >= Limit -> 
+            if  Verbose -> 
+                    io:format("reach limit\n");
+                true -> {} 
+            end,
             Limit;
-        true ->
-            Fz = f(Calg,Zalg),
+        N == 0 -> 
+            if  Verbose -> 
+                    io:format("Z0 = (0+i*0)\n"); 
+                true -> {} 
+            end,
+            serie(Calg,{complexAlg,0.0,0.0},1,Limit,Verbose);
+        true -> 
+            Fz = f(Calg,Zalg), %calcolo iterazione N-sima (Zn)
             {complexAlg, X,Y} = Fz ,
-            R_Fz = complex:r(Fz),
+            R_Fz = complex:r(Fz), %modulo iterazione N-sima
             if
-                R_Fz > 2 -> 
-                    io:format("Z ~B = (~f + i*~f) \n",[N,X,Y]),
-                    io:format("module > 2\n"),
-                    N;
+                R_Fz > 2 -> %iterazione N diverge
+                    if  Verbose ->
+                            io:format("Z~B = (~f + i*~f) \n",[N,X,Y]),
+                            io:format("module > 2\n");
+                        true -> {}
+                    end,
+                    N; 
                 true -> %la serie non ancora diverge
-                    io:format("Z ~B = (~f + i*~f) \n",[N,X,Y]),
-                    serie(Calg,Fz,N+1,Limit)
+                    if  Verbose -> 
+                            io:format("Z~B = (~f + i*~f) \n",[N,X,Y]);
+                        true -> {}
+                    end,
+                    serie(Calg,Fz,N+1,Limit,Verbose)
             end
     end
 .
      
-start_serie(CAlg,Limit)  ->
-    io:format("Z0 = (0+i*0)\n"),
-    serie(CAlg,{complexAlg,0.0,0.0},1,Limit).
+start_serie({complexAlg,A,B},Limit,Verbose)  ->
+    %return iterazione a cui diverge o limite
+    CAlg = {complexAlg,A,B},
+    StartTm = erlang:system_time(millisecond),
+    It = serie(CAlg,{complexAlg,0.0,0.0},0,Limit,Verbose),
+    TempoExGlobale = erlang:system_time(millisecond) - StartTm,
+    io:format("C = (~f+i*~f) \titerazioni:~B \ttm=~Bms\n",[A,B,It,TempoExGlobale]),
+    It.
 
     
 
 
-mMatrix(N,M,Step,Limit) -> 
-    Pairs = [ [{complexAlg,X,Y} || X <- range(0.0,N,Step)] || Y <- range(0.0,M,Step)],
-    lists:map (fun(Row) -> lists:map (fun(P) -> spawn(mset, start_serie, [P,Limit]) end,Row ) end, Pairs ) 
+mMatrix(Step,Limit,Verbose) -> 
+    Pairs = [ [{complexAlg,X,Y} || X <- range(-2.0,1.0,Step)] || Y <- range(-1.0,1.0,Step)],
+    lists:map (fun(Row) -> lists:map (fun(P) -> spawn(mset, start_serie, [P,Limit,Verbose]) end,Row ) end, Pairs ) 
 . 
 
-mMatrixSeq(N,M,Step,Limit) -> 
-    Pairs = [ [{complexAlg,X,Y} || X <- range(0.0,N,Step)] || Y <- range(0.0,M,Step)],
+mMatrixSeq(Step,Limit,Verbose) -> 
+    Pairs = [ [{complexAlg,X,Y} || X <- range(-2.0,1.0,Step)] || Y <- range(-1.0,1.0,Step)],
     lists:map (
         fun(Row) -> lists:map (
             fun(P) -> 
-                It = start_serie(P,Limit),
+                It = start_serie(P,Limit,Verbose),
                 if 
                     It < Limit -> "*" ;
                     true -> " " 
