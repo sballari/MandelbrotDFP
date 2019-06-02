@@ -1,5 +1,5 @@
 - module(mset).
-- export ([f/2,serie/5,mMatrixSeq/3,start_serie/3]).
+- export ([f/2,serie/5,mMatrixSeq/3,start_serie/3,range/3]).
 
 range(N,M,Step) -> 
     if 
@@ -107,4 +107,3 @@ mMatrixSeq(Step,Limit,VerboseLevel) ->
     io:format("FINE CALCOLO MATRICE DI APPARTENENZA\ttm=~Bms\n",[FinalTime]),
     MS
 . 
-
