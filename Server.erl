@@ -30,8 +30,8 @@ matrixAgent() ->
     %VerboseLevel: 0 solo fine calcolo sottomatrice totale, 1 risultato finale per ogni C , 2 singole iterazioni
     receive 
         {{range,Xl,Xr,Yb,Yt},Step,Limit,VerboseLevel,Pid} ->
-            Filename = "range"++io_lib:format("~.2f", [Xl])++" "++io_lib:format("~.2f", [Xr])++" "++
-                        io_lib:format("~.2f", [Yb])++" "++io_lib:format("~.2f", [Yt])++".txt",
+            Filename = "outdata/range"++io_lib:format("~.2f", [Xl])++" "++io_lib:format("~.2f", [Xr])++" "++
+                        io_lib:format("~.2f", [Yb])++" "++io_lib:format("~.2f", [Yt])++".csv",
             
             case file:open(Filename, [append]) of %apro il file
                 {ok, IoDevice} ->
