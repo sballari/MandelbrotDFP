@@ -3,6 +3,7 @@
 
 man_server(NAgents,Step,Limit,VerboseLevel) ->
     % Y range -2, 1
+    StartTm = erlang:system_time(millisecond),
     DeltaX = 3.0/NAgents,
     Ranges = [ {range,-2.0+N*DeltaX,-2.0+(N+1)*DeltaX,-1.0,1.0} || N <- mset:range(0,NAgents,1)],
     Agents = [ spawn(server, matrixAgent, []) || N <- mset:range(0,NAgents,1)],
@@ -15,14 +16,16 @@ man_server(NAgents,Step,Limit,VerboseLevel) ->
             receive
                 {done,_} -> io:format("processo done\n",[]);
                 error -> 
-                    io:format("error")
-                after 10 -> io:format("qualcosa non gira\n")
+                    io:format("error\n")
+                %after 10000 -> io:format("qualcosa non gira\n")
 
             end
         end
          ,mset:range(0,NAgents,1) ),
 
-    lists:foreach(fun(A) -> A!stop end, Agents)
+    lists:foreach(fun(A) -> A!stop end, Agents),
+    FinalTime = erlang:system_time(millisecond) - StartTm,
+    io:format("FINE CALCOLO files MATRICE \ttm=~Bms\n",[FinalTime])
 .
 
 
@@ -42,7 +45,7 @@ matrixAgent() ->
                             end,
                     Pairs = [{complexAlg,X,Y} || X <- mset:range(Xl,Xr,Step), Y <- mset:range(Yb,Yt,Step)],
                     lists:foreach (Fun, Pairs ),
-                    io:format("FINE CALCOLO MATRICE DI APPARTENENZA\n",[]),
+                    io:format("FINE CALCOLO MATRICE DI APPARTENENZA ~.2f ~.2f\n",[Xl,Xr]),
                     file:close(IoDevice),
                     Pid ! {done,self()},
                     matrixAgent();
@@ -53,13 +56,13 @@ matrixAgent() ->
                 end;
             stop -> io:format(" Server stopping ... \n", []);
             _ -> 
-                io:format("messaggi non ben formato\n")
+                io:format("messaggio non ben formato\n")
             after 5000 -> io:format("se non mi invii niente mi spengo!\n")
         end
     .
 
 
 alg2string({complexAlg,X,Y}) ->
-    Xs = io_lib:format("~.2f", [X]),
-    Ys = io_lib:format("~.2f", [Y]),
+    Xs = io_lib:format("~.5f", [X]),
+    Ys = io_lib:format("~.5f", [Y]),
     Xs++" , "++Ys .
