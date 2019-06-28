@@ -8,6 +8,7 @@ stdrange_man(NAgents,NBatch,Step,Limit) ->
 man_server(NAgents,NBatch,Step,Limit,VerboseLevel,Xmin,Xmax,Ymin,Ymax) ->
     % Y range -2, 1
     StartTm = erlang:system_time(millisecond),
+    writeInfoFile(Limit,Step),
     %divido il lavoro in range
     DeltaX = (Xmax-Xmin)/NBatch,
     Ranges = [ {range,Xmin+N*DeltaX,Xmin+(N+1)*DeltaX,Ymin,Ymax} || N <- mset:range(0,NBatch,1)],
@@ -79,8 +80,7 @@ matrixAgent() ->
     %VerboseLevel: 0 solo fine calcolo sottomatrice totale, 1 risultato finale per ogni C , 2 singole iterazioni
     receive 
         {{range,Xl,Xr,Yb,Yt},Step,Limit,VerboseLevel,Pid} ->
-            Filename = "outdata/range"++io_lib:format("~.2f", [Xl])++" "++io_lib:format("~.2f", [Xr])++" "++
-                        io_lib:format("~.2f", [Yb])++" "++io_lib:format("~.2f", [Yt])++".csv",
+            Filename = "outdata/range"++io_lib:format(" ~.5f ~.5f ~.5f ~.5f ", [Xl,Xr,Yb,Yt])++".csv",
             
             case file:open(Filename, [append]) of %apro il file
                 {ok, IoDevice} ->
@@ -89,8 +89,6 @@ matrixAgent() ->
                                 Bytes = alg2string(P)++" , "++io_lib:format("~p", [Result])++"\n",
                                 file:write(IoDevice, Bytes)
                             end,
-                    % Pairs = [{complexAlg,X,Y} || X <- mset:range(Xl,Xr,Step), Y <- mset:range(Yb,Yt,Step)],
-                    % lists:foreach (Fun, Pairs ),
                     funOverRange(Xl,Yb,Fun,{range,Xl,Xr,Yb,Yt},Step),
                     io:format("FINE CALCOLO SOTTO-MATRICE ~.2f ~.2f\n",[Xl,Xr]),
                     file:close(IoDevice),
@@ -104,8 +102,6 @@ matrixAgent() ->
         stop -> io:format(" Server stopping ... \n", []);
         _ -> 
             io:format("messaggio non ben formato\n")
-        % after 5000 -> servirebbe gestione errori dal padre
-        %     io:panic("se non mi invii niente mi spengo!\n")
         end
     .
 
@@ -114,3 +110,17 @@ alg2string({complexAlg,X,Y}) ->
     Xs = io_lib:format("~.5f", [X]),
     Ys = io_lib:format("~.5f", [Y]),
     Xs++" , "++Ys .
+
+
+writeInfoFile(Limit,Step) ->
+    %creo file con info per creare immagine
+    Filename = "outdata/range/info.info",
+            
+    case file:open(Filename, [append]) of %apro il file
+        {ok, IoDevice} ->
+            InfoStr = io_lib:format("~.5f,~p", [Step,Limit])++"\n",
+            file:write(IoDevice, InfoStr);
+        {error, Reason} ->
+            io:panic("~s open error  reason:~s~n\nFile di info non creabile", [Filename, Reason])
+    end
+.

@@ -29,6 +29,12 @@ def parser(limit) :
             f.close()
     return Xs,Ys,Zs
 
+def readStepLimit() :
+    filePath = "outdata/info.info"
+    f = file(filePath)
+    s = f.read()
+    infos = s.split(',')
+    return infos[0],infos[1]
 
 def getncolors(n):
 	space = (255.0*3)/n
@@ -82,7 +88,8 @@ def printColorScale(colors):
 
 
 
-def showMand1(limit,step):
+def showMand():
+    step, limit = readStepLimit()
     xs, ys, zs = parser(limit)
     colors = getncolors(limit)
     printColorScale(colors)
@@ -110,4 +117,4 @@ def showMand1(limit,step):
 
 
 
-showMand1(2000,0.001)
+showMand(700,0.001)
