@@ -8,7 +8,7 @@ from PIL import Image
 from PIL import ImageColor as imgc
 import winsound
 
-def parser(limit) :
+def parser(limit,xl,xr,yb,yt) :
     Xs = []
     Ys = []
     Zs = []
@@ -16,25 +16,43 @@ def parser(limit) :
     onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
     for t_file in onlyfiles: 
         if t_file.split(".")[-1] == "csv" : 
-            f = file(str(mypath)+t_file)
-            s = f.read()
-            lines = s.split('\n')
-            if lines[-1] == '' :
-                del lines[-1]
-            for line in lines :
-                elmnts = line.split(',')
-                Xs.append(float(elmnts[0]))
-                Ys.append(float(elmnts[1]))
-                Zs.append(int(elmnts[2]))
-            f.close()
+            if fileIntersectRange(xl,xr,yb,yt,t_file): #RANGE INTERSECA
+                f = file(str(mypath)+t_file)
+                s = f.read()
+                lines = s.split('\n')
+                if lines[-1] == '':
+                    del lines[-1]
+                for line in lines :
+                    elmnts = line.split(',')
+                    if lineInRange(xl,xr,yb,yt,elmnts):
+                        Xs.append(float(elmnts[0]))
+                        Ys.append(float(elmnts[1]))
+                        Zs.append(int(elmnts[2]))
+                f.close()
     return Xs,Ys,Zs
 
+def fileIntersectRange(xl,xr,yb,yt,filename):
+    #RANGE INTERSECA sia su x che su y
+    estremi = filename.split(" ")
+    estremi[1] = float(estremi[1])
+    estremi[2] = float(estremi[2])
+    estremi[3] = float(estremi[3])
+    estremi[4] = float(estremi[4])
+    e = ((xl<=estremi[1] and estremi[1]<=xr) or (xl<=estremi[2] and xr>=estremi[2])) and ((yb<=estremi[3] and yt>=estremi[3]) or (yb<=estremi[4] and yt>=estremi[4]))
+    return e
+
+def lineInRange(xl,xr,yb,yt,elmnts):
+    x = float(elmnts[0])
+    y = float(elmnts[1])
+    e = (x>=xl and x<=xr and y>=yb and y<=yt)
+    return e
+
 def readStepLimit() :
-    filePath = "outdata/info.info"
+    filePath = "outdata/info.txt"
     f = file(filePath)
     s = f.read()
-    infos = s.split(',')
-    return infos[0],infos[1]
+    infos = (s.split('\n')[0] ).split(',')
+    return float(infos[0]),int(infos[1])
 
 def getncolors(n):
 	space = (255.0*3)/n
@@ -88,17 +106,11 @@ def printColorScale(colors):
 
 
 
-def showMand():
+def showMand(xa,xb,ya,yb):
     step, limit = readStepLimit()
-    xs, ys, zs = parser(limit)
+    xs, ys, zs = parser(limit,xa,xb,ya,yb)
     colors = getncolors(limit)
     printColorScale(colors)
-    
-    xa = -2.0
-    xb = 1.0
-    ya = -1.0
-    yb = 1.0
-    
     
     # image size 
     imgx = int ((xb-xa)/step)+1
@@ -117,4 +129,7 @@ def showMand():
 
 
 
-showMand(700,0.001)
+def stdShowMand():
+    showMand(-02.0,1.0,-1.0,1.0)
+
+stdShowMand()
