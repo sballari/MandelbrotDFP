@@ -19,13 +19,6 @@ f({complexAlg,Ca,Cb},{complexAlg,Za,Zb}) -> % f(c,z) = z^2 + c
     end
 .
 
-
-%  diver :: complexAlg -> 
-%           complexAlg -> 
-%           (Int:risultato prec) ->
-%           (Int:iterazione) ->
-%           (Int:diverge all'iter ...)
-
 serie({complexAlg,Ca,Cb}, {complexAlg,Za,Zb}, N, Limit, Verbose) ->
     % N : iterazione corrente
     % Limit : iterazione a cui fermarsi
@@ -95,15 +88,3 @@ start_serie({complexAlg,A,B},Limit,VerboseLevel)  ->
 
 
 
-mMatrixSeq(Step,Limit,VerboseLevel) -> 
-    %VerboseLevel: 0 solo fine calcolo totale, 1 risultato finale per ogni C , 2 singole iterazioni 
-    Fun = fun(P) -> start_serie(P,Limit,VerboseLevel) end,
-
-    StartTm = erlang:system_time(millisecond),
-    Pairs = [ [{complexAlg,X,Y} || X <- range(-2.0,1.0,Step)] || Y <- range(-1.0,1.0,Step)],
-    MS = lists:map (fun(Row) -> lists:map (Fun,Row ) end, Pairs ),
-    FinalTime = erlang:system_time(millisecond) - StartTm,
-
-    io:format("FINE CALCOLO MATRICE DI APPARTENENZA\ttm=~Bms\n",[FinalTime]),
-    MS
-. 

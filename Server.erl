@@ -5,6 +5,16 @@
 stdrange_man(NAgents,NBatch,Step,Limit) ->
     man_server(NAgents,NBatch,Step,Limit,0,-2.0,1.0,-1.0,1.0).
 
+
+sequentialMset(Step,Limit,VerboseLevel,Xmin,Xmax,Ymin,Ymax)->
+    %VerboseLevel: 0 solo fine calcolo totale, 1 risultato finale per ogni C , 2 singole iterazioni 
+    Fun = fun(P) -> mset:start_serie(P,Limit,VerboseLevel) end,
+    StartTm = erlang:system_time(millisecond),
+    funOverRange(Xmin,Ymin,Fun,{range, Xmin,Xmax,Ymin,Ymax},Step),
+    FinalTime = erlang:system_time(millisecond) - StartTm,
+    io:format("FINE CALCOLO MATRICE seq\ttm=~Bms\n",[FinalTime])
+. 
+
 man_server(NAgents,NBatch,Step,Limit,VerboseLevel,Xmin,Xmax,Ymin,Ymax) ->
     % Y range -2, 1
     StartTm = erlang:system_time(millisecond),
@@ -114,13 +124,14 @@ alg2string({complexAlg,X,Y}) ->
 
 writeInfoFile(Limit,Step) ->
     %creo file con info per creare immagine
-    Filename = "outdata/range/info.info",
+    Filename = "outdata/info.txt",
             
     case file:open(Filename, [append]) of %apro il file
         {ok, IoDevice} ->
             InfoStr = io_lib:format("~.5f,~p", [Step,Limit])++"\n",
-            file:write(IoDevice, InfoStr);
+            file:write(IoDevice, InfoStr),
+            file:close(IoDevice);
         {error, Reason} ->
-            io:panic("~s open error  reason:~s~n\nFile di info non creabile", [Filename, Reason])
+            io:panic("~s open error  reason:~s~n", [Filename, Reason])
     end
 .
