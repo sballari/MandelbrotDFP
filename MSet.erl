@@ -1,5 +1,5 @@
 - module(mset).
-- export ([f/2,serie/5,mMatrixSeq/3,start_serie/3,range/3]).
+- export ([f/2,serie/5,start_serie/3,range/3]).
 
 range(N,M,Step) -> 
     if 

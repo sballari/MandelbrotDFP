@@ -1,18 +1,32 @@
 -module(server).
--export ([stdrange_man/4, man_server/9,matrixAgent/0,funOverRange/5]).
+-export ([stdrange_man/4, man_server/9,matrixAgent/0,funOverRange/5,stdrange_seq/2,sequentialMset/7]).
 
 
 stdrange_man(NAgents,NBatch,Step,Limit) ->
     man_server(NAgents,NBatch,Step,Limit,0,-2.0,1.0,-1.0,1.0).
 
+stdrange_seq(Step,Limit)->
+    sequentialMset(Step,Limit,0,-2.0,1.0,-1.0,1.0).
 
 sequentialMset(Step,Limit,VerboseLevel,Xmin,Xmax,Ymin,Ymax)->
     %VerboseLevel: 0 solo fine calcolo totale, 1 risultato finale per ogni C , 2 singole iterazioni 
-    Fun = fun(P) -> mset:start_serie(P,Limit,VerboseLevel) end,
     StartTm = erlang:system_time(millisecond),
-    funOverRange(Xmin,Ymin,Fun,{range, Xmin,Xmax,Ymin,Ymax},Step),
-    FinalTime = erlang:system_time(millisecond) - StartTm,
-    io:format("FINE CALCOLO MATRICE seq\ttm=~Bms\n",[FinalTime])
+    writeInfoFile(Limit,Step),    
+    Filename = "outdata/range"++io_lib:format(" ~.5f ~.5f ~.5f ~.5f ", [Xmin,Xmax,Ymin,Ymax])++".csv",
+    case file:open(Filename, [append]) of %apro il file
+        {ok, IoDevice} ->
+            Fun = fun(P) -> 
+                Result = mset:start_serie(P,Limit,VerboseLevel) ,
+                Bytes = alg2string(P)++" , "++io_lib:format("~p", [Result])++"\n",
+                file:write(IoDevice, Bytes)
+            end,
+            funOverRange(Xmin,Ymin,Fun,{range, Xmin,Xmax,Ymin,Ymax},Step),
+            file:close(IoDevice),
+            FinalTime = erlang:system_time(millisecond) - StartTm,
+            io:format("FINE CALCOLO seq \ttm=~Bms\n",[FinalTime]);
+        {error, Reason} ->
+            io:panic("~s open error  reason:~s~n", [Filename, Reason])
+    end
 . 
 
 man_server(NAgents,NBatch,Step,Limit,VerboseLevel,Xmin,Xmax,Ymin,Ymax) ->
@@ -55,6 +69,8 @@ man_server(NAgents,NBatch,Step,Limit,VerboseLevel,Xmin,Xmax,Ymin,Ymax) ->
 
     
 waitAndSend(Works,Step,Limit,VerboseLevel) -> 
+    %return : fail in caso di fallimento da parte di almeno UN processo
+    %         done in caso tutti i lavori sono stati mandati
     case Works of 
         [] -> 
             io:format("tutti i work sono stati mandati\n"),
