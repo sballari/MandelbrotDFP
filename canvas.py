@@ -33,7 +33,7 @@ def readStepLimit() :
     filePath = "outdata/info.txt"
     f = file(filePath)
     s = f.read()
-    infos = (s.split('\n')[0] ).split(',')
+    infos = (s.split('\n')[-2] ).split(',')
     return float(infos[0]),int(infos[1])
 
 def getncolors(n):
