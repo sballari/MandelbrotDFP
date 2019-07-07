@@ -36,7 +36,7 @@ man_server(NAgents,NBatch,Step,Limit,VerboseLevel,Xmin,Xmax,Ymin,Ymax) ->
     %divido il lavoro in range
     DeltaX = (Xmax-Xmin)/NBatch,
     Ranges = [ {range,Xmin+N*DeltaX,Xmin+(N+1)*DeltaX,Ymin,Ymax} || N <- mset:range(0,NBatch,1)],
-      
+    %se tolgo questa list comprension ci mette come il sequenziale.
     Agents = [ spawn(server, matrixAgent, []) || _ <- mset:range(0,NAgents,1)], 
     
 

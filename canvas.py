@@ -59,22 +59,6 @@ def getncolors(n):
 
 	return colors
 
-
-def getncolors1(n) :
-    space = 360.0/n
-    colors = []
-    s = 100
-    l = 50
-
-    for i in range(n) :
-        h = space*i
-        hsl_String = "hsl(" + str(h) + "," + str(s) + "%," + str(l) + "%)"
-        colors.append(imgc.getrgb(hsl_String))
-    winsound.Beep(2500, 1000)
-    return colors
-
-
-
 def printColorScale(colors):
     b = 500
     image = Image.new("RGB", (b,10*len(colors)))

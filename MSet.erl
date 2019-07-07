@@ -7,11 +7,12 @@ range(N,M,Step) ->
         N < M -> [N | range(N+Step,M,Step)] 
     end .
 
-f({complexAlg,Ca,Cb},{complexAlg,Za,Zb}) -> % f(c,z) = z^2 + c
+f({complexAlg,Ca,Cb},{complexAlg,Za,Zb}) -> % fc(z) = z^2 + c
     if 
         (Za==0) and (Zb==0) -> 
-            {complexAlg,Ca,Cb}; % 0^2 + c
-        true ->
+            {complexAlg,Ca,Cb}; % 0^2 + c, 
+            %caso a parte altrimento conversione a exp non definita
+        true -> %otherwise
             Zexp = complex:cAlg2cExp({complexAlg,Za,Zb}),
             Zp2 = complex:power(2.0,Zexp),
             Zp2Alg = complex:cExp2cAlg(Zp2),
