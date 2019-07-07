@@ -45,7 +45,7 @@ man_server(NAgents,NBatch,Step,Limit,VerboseLevel,Xmin,Xmax,Ymin,Ymax) ->
     Attribuzioni = lists:zip(Agents,FirstN),
     lists:foreach(fun({A,R}) -> A ! {R,Step,Limit,VerboseLevel,self()} end, Attribuzioni ),
 
-    %attendo le NBatch risposte
+    %attendo le NBatch risposte e manda il prossimo lavoro
     case waitAndSend(WRest,Step,Limit,VerboseLevel) of 
         done -> %tutti i work sono stati mandati
             %ricevo gli ultimi Nagents processi non ricevuti da waitAndSend
@@ -63,7 +63,7 @@ man_server(NAgents,NBatch,Step,Limit,VerboseLevel,Xmin,Xmax,Ymin,Ymax) ->
         fail ->  io:panic("ERRORE, cartella ospite probabilmente non creata")
     end,
 
-    %in ogni caso fermo i processi
+    %in ogni caso fermo tutti i processi
     lists:foreach(fun(A) -> A!stop end, Agents) 
 .
 

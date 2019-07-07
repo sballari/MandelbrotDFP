@@ -11,7 +11,7 @@ f({complexAlg,Ca,Cb},{complexAlg,Za,Zb}) -> % fc(z) = z^2 + c
     if 
         (Za==0) and (Zb==0) -> 
             {complexAlg,Ca,Cb}; % 0^2 + c, 
-            %caso a parte altrimento conversione a exp non definita
+            %caso a parte altrimento conversione a exp non definita (calcolo argomento)
         true -> %otherwise
             Zexp = complex:cAlg2cExp({complexAlg,Za,Zb}),
             Zp2 = complex:power(2.0,Zexp),
@@ -24,7 +24,7 @@ serie({complexAlg,Ca,Cb}, {complexAlg,Za,Zb}, N, Limit, Verbose) ->
     % N : iterazione corrente
     % Limit : iterazione a cui fermarsi
     % verbose : stampa delle iterazione Zn
-    % return : #dell'iterazione a cui la serie diverge o il limite
+    % return : # dell'iterazione a cui la serie diverge o il limite
     Calg = {complexAlg,Ca,Cb},
     Zalg = {complexAlg,Za,Zb},
     
@@ -41,7 +41,7 @@ serie({complexAlg,Ca,Cb}, {complexAlg,Za,Zb}, N, Limit, Verbose) ->
                 true -> {} 
             end,
             serie(Calg,{complexAlg,0.0,0.0},1,Limit,Verbose);
-        true -> 
+        true -> %otherwise
             Fz = f(Calg,Zalg), %calcolo iterazione N-sima (Zn)
             {complexAlg, X,Y} = Fz ,
             R_Fz = complex:r(Fz), %modulo iterazione N-sima
