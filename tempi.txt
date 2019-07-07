@@ -14,6 +14,7 @@ stdrange_seq -> 5648689ms
 stdrange_seq(0.01,700)->13438ms
 stdrange_seq(0.01,700)->147515ms 
 
+stdrange_man(7,7,0.01,700)->11031ms
 stdrange_man(7,7,0.01,700)->9063ms (man mano che finiscono rimangono processori vuoti)
 stdrange_man(7,14,0.01,700)->7344 ms
 stdrange_man(7,20,0.01,700)->7719ms
